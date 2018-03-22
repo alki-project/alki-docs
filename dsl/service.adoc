@@ -1,0 +1,23 @@
+Services (service)
+------------------
+
+Services are the key element Assemblies are typically made up of. Like the block form of `set`,
+`service` takes a name and block, which will be evaluated once on-demand and the result cached.
+Whereas `set` is a lightweight element for simple values, `service` provides more functionality
+via overlays and tags.
+
+Commonly a service will require the file that defines a class, and then constructs an instance of
+that class.
+
+```ruby
+require 'alki'
+assembly = Alki.create_assembly do
+  service :logger do
+    require 'logger'
+    Logger.new STDOUT
+  end
+end
+assembly.new.logger << "hello\n"
+
+#output: hello
+```

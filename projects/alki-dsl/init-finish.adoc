@@ -1,0 +1,25 @@
+Init and Finish
+---------------
+
+The DSL can also define "init" and "finish" blocks which will be run before and after the DSL is evaluated.
+
+```ruby
+require 'alki/dsl'
+dsl = Alki::Dsl.build 'alki/dsls/dsl' do
+ init do
+   print "Hello "
+ end
+ dsl_method :name do |name|
+   print name
+ end
+ finish do
+   puts ", and welcome"
+ end
+end
+
+dsl.build do
+  name "Matt"
+end
+
+# output: Hello Matt, and welcome
+```

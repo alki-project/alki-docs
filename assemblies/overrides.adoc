@@ -1,0 +1,49 @@
+Overrides
+---------
+
+Assembly overrides provide a way to configure or customize an Assembly when
+constructing an instance.
+
+For example, using the assembly created above, one might want to change the IO object logged to.
+
+The simplest way to do this is to provide a hash which will override values in the assembly (as if the `set`
+command was called in the DSL):
+
+```ruby
+require 'stringio'
+io = StringIO.new
+instance = assembly.new log_io: io
+instance.util.logger.info "test"
+puts(io.string.match(/INFO -- : test/) != nil)
+
+# output: true
+```
+
+The limitation of this is that it can only override basic values. To override more complex elements
+a block can be given to `new` allowing the full assembly DSL.
+
+```ruby
+class MyLogger
+  def initialize(io)
+    @io = io
+  end
+  def info(msg)
+    @io.puts "INFO #{msg}"
+  end
+end
+
+instance = assembly.new do
+  group :util do
+    service :logger do
+      MyLogger.new original.log_io
+    end
+  end
+end
+instance.util.logger.info "test"
+
+# output: INFO test
+```
+
+One thing of note is that elements from the assembly are accessible in overrides via the `original`
+method, as seen above. This can also be used to access the original versions of elements that have
+been overridden.

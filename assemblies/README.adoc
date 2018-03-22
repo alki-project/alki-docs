@@ -1,0 +1,22 @@
+Assemblies
+==========
+
+If a set of classes are your raw materials,
+an Assembly is the finished product,
+ready to be used.
+
+To get there,
+you provide Alki with your assembly definition,
+which acts as the instructions for how to piece together your
+classes and objects.
+Assemblies are made up of elements,
+which are groups of other elements, or various value types like services and factories.
+
+=== On-Demand
+
+Assembly values are only built when referenced, on demand.
+This means even if you have a very large assembly
+only the things you actually use in a given run will be created,
+or often even `require`-d.
+It also means that all values will automatically be built
+in the correct order to satisfy dependencies.

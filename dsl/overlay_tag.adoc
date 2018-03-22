@@ -1,0 +1,90 @@
+Overlaying tags (overlay_tag)
+-----------------------------
+
+Instead of overlaying services directly, it's often useful to overlay all services
+with a given tag.
+
+```ruby
+require 'alki'
+
+assembly = Alki.create_assembly do
+  overlay_tag :exclaimed, :exclaim, 3
+
+  tag :exclaimed
+  service :greeting do
+    'Hello World'
+  end
+
+  factory :exclaim do
+    -> (string,count) do
+      string + ('!' * count)
+    end
+  end
+end
+
+puts assembly.new.greeting
+
+#output: Hello World!!!
+```
+
+Factories can access the tags of the services their being called from, allowing you
+to customize the build based on what tags are present
+
+```ruby
+require 'alki'
+
+assembly = Alki.create_assembly do
+  overlay_tag :process, :process_string
+
+  tag :process, exclaim: 3
+  service :greeting do
+    'Hello World'
+  end
+
+  factory :process_string do
+    -> (string) do
+      if exclaim = meta[:tags][:exclaim]
+        string = string + ('!' * exclaim)
+      end
+      string
+    end
+  end
+end
+
+puts assembly.new.greeting
+
+#output: Hello World!!!
+```
+
+Finally, tag overlays work even across assembly mounts, allowing overlays to
+be defined in a library, and then applied by tagging services.
+
+```ruby
+require 'alki'
+
+string_processor = Alki.create_assembly do
+  overlay_tag :process, :process_string
+
+  factory :process_string do
+    -> (string) do
+      if exclaim = meta[:tags][:exclaim]
+        string = string + ('!' * exclaim)
+      end
+      string
+    end
+  end
+end
+
+assembly = Alki.create_assembly do
+  mount :string_processor, string_processor
+
+  tag :process, exclaim: 3
+  service :greeting do
+    'Hello World'
+  end
+end
+
+puts assembly.new.greeting
+
+#output: Hello World!!!
+```

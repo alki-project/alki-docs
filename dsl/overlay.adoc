@@ -1,0 +1,36 @@
+Overlay (overlay)
+-----------------
+
+Overlays are a way to transparently wrap services.
+They work by taking the name of a service or a group
+along with the name of an element to be used as the overlay,
+plus some optional arguments.
+
+When the named service is built
+the overlay element will be called (with `.call`)
+with the built service object and the optional arguments,
+and it's result will be what's returned.
+
+Factories work well as overlay elements.
+
+```ruby
+require 'alki'
+
+assembly = Alki.create_assembly do
+  overlay :greeting, :exclaim, 3
+
+  service :greeting do
+    'Hello World'
+  end
+
+  factory :exclaim do
+    -> (string,count) do
+      string + ('!' * count)
+    end
+  end
+end
+
+puts assembly.new.greeting
+
+#output: Hello World!!!
+```

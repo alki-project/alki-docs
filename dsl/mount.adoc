@@ -1,0 +1,78 @@
+Mounting Assemblies (mount)
+---------------------------
+
+Other assemblies can be mounted into your Assembly using the `mount` command.
+
+The first argument is what the element should be named in the parent assembly.
+The optional second argument is the assembly to be mounted.
+This can either be the assembly module,
+or be a "require" string (relative path but no `.rb`).
+It defaults to the element name.
+If a string, Alki will attempt to `require` it, and then look for a matching constant.
+
+
+```ruby
+require 'alki'
+
+other_assembly = Alki.create_assembly do
+  set :val, "one"
+
+  # This is invalid as there is no such element as 'val2'
+  set :invalid_val2 do
+    val2
+  end
+
+  # Normally, this would also be invalid, but if mounted
+  # in an assembly that has a 'val2' element, this works.
+  set :root_val2 do
+    root.val2
+  end
+end
+
+assembly = Alki.create_assembly do
+  set :val2, "two"
+  mount :other, other_assembly
+end
+instance = assembly.new
+puts instance.other.val
+#output: one
+
+# Even though val2 exists in MainAssembly, it is not directly accessibly to elements
+# within OtherAssembly
+begin
+  puts instance.other.invalid_val2
+rescue => e
+  puts e
+end
+# output: undefined local variable or method 'val2'
+
+# This works, because root returns the root assembly, which has a 'val2' element
+puts instance.other.root_val2
+#output: two
+```
+
+In addition, `assembly` takes an optional third hash argument or a block which can be used to set
+overrides in the same way `::new` does for assemblies. Elements from the parent assembly are
+automatically in scope for overrides.
+
+```ruby
+require 'alki'
+other_assembly = Alki.create_assembly do
+  set :msg, nil
+  func :print do
+    puts msg
+  end
+end
+
+assembly = Alki.create_assembly do
+  set :val, "hello"
+  mount :other, other_assembly do
+    set :msg do
+      val
+    end
+  end
+end
+assembly.new.other.print
+
+#output: hello
+```

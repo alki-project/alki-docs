@@ -1,0 +1,19 @@
+Functions (func)
+----------------
+
+Simple callable values can be created with the `func` command. These can take arguments, are run
+each time they are referenced, and can access other elements.
+
+```ruby
+require 'alki'
+assembly = Alki.create_assembly do
+  set :greeting, "Hello %s!"
+
+  func :greet do |name|
+    puts(greeting % [name])
+  end
+end
+puts assembly.new.greet "Matt"
+
+#output: Hello Matt!
+```

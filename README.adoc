@@ -2,16 +2,16 @@
 
 Alki (AL-kai) is a Dependency Injection framework for Ruby. Alki is designed to help organize and scale your project,
 so you can focus on the important stuff.
-It can be used alongside frameworks such as Ruby on Rails.
+It can be used alongside frameworks such as link:projects/alki-rails.adoc[Ruby on Rails].
 
 Some high level features:
 
 * Easily manage objects and dependencies
 * Enables writing reusable and testable code
 * Requires no annotations, mixins, or other changes to your code.
-* https://github.com/alki-project/alki-console[Developer console] (built on pry)
-* Automatic https://github.com/alki-project/alki-reload[code reloading]
-* Powerful https://github.com/alki-project/alki-dsl[DSL toolkit]
+* link:projects/alki-console.adoc[Developer console] (built on pry)
+* Automatic link:projects/alki-reload.adoc[code reloading]
+* Powerful link:projects/alki-dsl/README.adoc[DSL toolkit]
 * Extensible
 
 [[installation]]
@@ -42,9 +42,11 @@ that connects our classes and modules together, and puts them into a special obj
 called an Assembly.
 
 There are many ways to use Assemblies, but the most common is to have a single
-Assembly for a project. For example, if you hade a "todo" command line utility
-project that you wanted to use Alki with, all you would need to do to create
-an Assembly is add this file.
+Assembly for a project, so that use case is very easy to do.
+For example, if you hade a "todo" command line utility
+project that you wanted to use Alki with,
+all you would need to do to create
+an Assembly for the project is add this file:
 
 .lib/todo.rb
 ```ruby
@@ -65,13 +67,15 @@ $ bundle exec irb -Ilib
 [[defining-elements]]
 ### Defining Elements
 
-Adding things to the assembly requires an assembly definition file. By convention this is
-named `config/assembly.rb` and is built using a simple DSL. There are
-a handful of different element types in Assemblies. Below are a few of the
-most common. Full documentation of the DSL can be found
-link:assembly_dsl.adoc[here]
-
+Adding things to the assembly requires an Assembly definition file.
+By convention this is named `config/assembly.rb` and is built using a DSL.
+There are a handful of different element types in Assemblies.
 Elements can refer to other elements, and can be defined in any order.
+
+Full documentation of the DSL can be found link:dsl/README.adoc[here].
+
+Below is an example Assembly definition for the todo application
+which uses a few of the core element types.
 
 .config/assembly.rb
 ```ruby
@@ -103,8 +107,8 @@ Alki do
   end
 end
 ```
-<1> `group` allows bundling together subelements (and which can be moved to their own files)
-<2> `set` defines simple values
+<1> `group` allows bundling together subelements
+<2> `set` defines simple values, like configration settings
 <3> `service` defines our main application objects
 
 Any element can be accessed directly from the assembly object.
@@ -115,7 +119,9 @@ $ bundle exec irb -Ilib
  => true
 2.4.0 :002 > todo = Todo.new
  => #<Todo:21964520>
-2.4.0 :003 > todo.interface.run
+2.4.0 :003 > todo.settings.prompt
+ => "> "
+2.4.0 :004 > todo.interface.run
 > ?
 All commands can be shortened to their first letters
 print
@@ -129,8 +135,8 @@ quit
 
 ```
 
-The 'alki-console' tool can also be used to quickly work with assemblies.
-Add `gem 'alki-console'` to your Gemfile and run `bundle --binstubs`.
+The 'alki-console' developer console can also be used to quickly work with assemblies.
+Add `gem 'alki-console'` to the Gemfile and run `bundle --binstubs`.
 
 ```
 $ bin/alki-console
@@ -141,18 +147,33 @@ todo> settings.prompt
 [[executable]]
 ### Creating an executable
 
-Read more about creating executables with Alki
-link:executables.adoc[here]
+Read more about creating executables with Alki,
+including how to create executables to distribute in a gem,
+link:assemblies/executables.adoc[here]
 
 In the todo example, it's a CLI utility so it requires an executable.
 The executable just needs to require the main project file,
 create a new instance of the assembly,
 and call a method on a service.
 
-.exe/todo
+.bin/todo
 ```ruby
+#!/usr/bin/env ruby
+
+# Setup 
+require 'bundler/setup'
+require 'alki/bin'
+
 require 'todo'
 Todo.new.interface.run
+```
+
+```
+$ bin/todo
+> print
+1. take out the trash
+> quit
+$
 ```
 
 [[splitting]]
@@ -161,7 +182,7 @@ Todo.new.interface.run
 As a project grows, it's helpful to be able to split out
 parts of the Assembly configuration into multiple files.
 
-This can be accomplished with the `load` method in the DSL,
+This can be accomplished with the link:dsl/load.adoc[`load`] method in the DSL,
 which will load the named file and add it the elements
 defined in it as a group in the assembly.
 

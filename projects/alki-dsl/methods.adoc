@@ -1,0 +1,18 @@
+DSL Methods
+-----------
+
+Each DSL defines any number of "dsl methods", which are methods that will be exposed to the user of the DSL.
+
+```ruby
+require 'alki/dsl'
+dsl = Alki::Dsl.build 'alki/dsls/dsl' do
+  dsl_method :hello do |name|
+    puts "Hello #{name}"
+  end
+end
+dsl.build do
+  hello 'World'
+end
+
+# output: Hello World
+```

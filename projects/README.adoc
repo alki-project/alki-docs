@@ -1,0 +1,26 @@
+= Alki Projects
+
+Alki is composed of a number of separate projects.
+Some are already part of Alki core,
+but can be used standalone,
+while others are separate and can be added to Alki projects
+as desired.
+
+== Part of core
+
+link:alki-loader.adoc[Alki::Loader]::
+Library for using "non-standard" source files in your project.
+
+link:alki-dsl.adoc[Alki::Dsl]::
+Library for building DSLs. All DSLs in Alki are built with Alki::Dsl.
+
+== Separate libraries
+
+link:alki-rails.adoc[Alki::Rails]::
+Easy integration of Alki with Ruby on Rails
+
+link:alki-reload.adoc[Alki::Reload]::
+Automatic code reloading for Alki projects.
+
+link:alki-console.adoc[Alki::Console]::
+Developer console based on pry for to directly interact with your Assembly.

@@ -1,0 +1,25 @@
+Loading groups (load)
+--------------------
+
+Groups can also be loaded from other config files via the `load` command.
+
+.config/settings.rb
+```ruby
+Alki do
+  set :val, "hello"
+end
+```
+
+.main code
+```ruby
+require 'alki'
+assembly = Alki.create_assembly config_dir: 'config' do
+  load :settings
+  func :print do
+     puts settings.val
+  end
+end
+assembly.new.print
+
+# output: hello
+```

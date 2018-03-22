@@ -1,0 +1,49 @@
+Groups (group)
+--------------
+
+Groups are the basic way of organizing the elements of your Assembly. Creating elements at the top
+level of an Assembly will place them in a root group, but subgroups are easily created via the `group`
+command.
+
+```ruby
+require 'alki'
+assembly = Alki.create_assembly do
+  group :sub_group do
+    set :val, "hello world"
+  end
+end
+puts assembly.new.sub_group.val
+
+#output: hello world
+```
+
+Scoping is also done by group, so that an element will be found by searching through parent groups.
+
+```ruby
+require 'alki'
+assembly = Alki.create_assembly do
+  set :val, "one"
+
+  func :print do
+    puts val
+  end
+
+  group :g1 do
+    set :val, "two"
+
+    group :g2 do
+      func :print do
+        puts val
+      end
+    end
+  end
+end
+
+assembly.new.print
+
+#output: one
+
+assembly.new.g1.g2.print
+
+#output: two
+```

@@ -1,0 +1,40 @@
+Combining DSLs
+--------------
+
+DSLs can "require" other DSLs, causing both of their methods to be available to the user.
+
+Building off of the strings_dsl above.
+
+```ruby
+my_dsl = Alki::Dsl.build 'alki/dsls/dsl' do
+  # Require other DSL. Value can also be a "load" string (see Alki::Loader section)
+  require_dsl strings_dsl
+
+  # This init block will be run *after* the strings_dsl one
+  init do
+    @transform = nil
+  end
+
+  dsl_method :transform do |&blk|
+    # Don't need to share this, so instance variable works
+    @transform = blk
+  end
+
+  # This finish block will be run *before* the strings_dsl one.
+  finish do 
+    if @transform
+      ctx[:strings].map! &@transform
+    end
+  end
+end
+
+my_dsl.build(separator: ', ') do
+  transform(&:capitalize)
+
+  add "hello"
+  add "world"
+end
+
+# result => Hello, World
+
+```

@@ -1,0 +1,47 @@
+DSL Helpers
+------------
+
+DSLs can also define helper methods
+which can be called within other dsls that require it.
+
+```ruby
+require 'alki/dsl'
+
+strings_dsl = Alki::Dsl.build 'alki/dsls/dsl' do
+  init do
+    ctx[:strings] = []
+  end
+
+  helper :set_separator do |sep|
+    ctx[:separator] = sep
+  end
+
+  dsl_method :add do |val|
+    ctx[:strings] << val
+  end
+
+  finish do
+    sep = ctx[:separator] || "\n"
+    ctx[:result] = ctx[:strings].join(sep)
+  end
+end
+
+my_dsl = Alki::Dsl.build 'alki/dsls/dsl' do
+  require_dsl strings_dsl
+
+  dsl_method :separator do |sep|
+    set_separator sep # Call helper from strings_dsl
+  end
+end
+
+result = my_dsl.build do
+  separator ' '
+
+  add "hello"
+  add "world"
+end
+
+puts result
+
+# output: hello world
+```

@@ -1,0 +1,26 @@
+Basic Values (set)
+-----------------
+
+The simplest type of values are ones created via the `set` command. There are two forms of `set`.
+One that just takes it's value as an argument, and another that takes a block.
+
+```ruby
+require 'alki'
+assembly = Alki.create_assembly do
+  # This form takes the value as the second argument
+  set :val1, "hello"
+
+  # INVALID! Value may not be a reference to another element
+  # set :val2, val1
+
+  # This form takes the value as a block.
+  # Block is run once and result cached.
+  # Allows referencing other elements
+  set :val2 do
+    val1
+  end
+end
+puts assembly.new.val2
+
+#output: hello
+```

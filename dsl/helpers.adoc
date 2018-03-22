@@ -1,0 +1,23 @@
+Helpers
+-------
+
+In addition to elements in scope, there are some helper methods that are always available in value
+blocks.
+
+[horizontal]
+
+assembly:: This will return the root group of the assembly the element is defined in.
+
+root:: This will return the root group of the 'top most' assembly being run. If only a single
+assembly is being run, this will be the same as `assembly` but if the element being run is in
+an assembly that has been mounted into another assembly, they will differ.
+
+lookup(path):: This can be used to reference an element by a string path (using periods (`.`) to
+drill down into groups). If called directly it will lookup using the local scope. It is also available
+as a method on all groups, so `assembly.lookup(path)` would lookup an element starting from the root
+of the assembly.
+
+lazy(path):: This works the same as `lookup`, but with an important difference: Instead of doing the
+lookup immediately, it will instead return a "proxy" object, which will do the lookup the first time
+a method is called on the proxy object, and then delegate all method calls to the actual element. This
+can be used to handle circular references in services.

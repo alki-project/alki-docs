@@ -1,0 +1,73 @@
+= Alki::Dsl
+
+Alki::Dsl is a library for building DSLs. The resulting DSL buliders can be used standalone or as builders for
+link:alki-loader.adoc[Alki::Loader].
+
+Alki::Dsl also allows composing and extending DSLs and comes with built in DSLs for building classes and
+new DSLs.
+
+https://github.com/alki-projects/alki-dsl[Project on Github]
+
+== Synopsis
+
+```ruby
+require 'alki/dsl'
+
+strings_dsl = Alki::Dsl.build 'alki/dsls/dsl' do
+  init do
+    @strings = []
+  end
+
+  dsl_method :add do |val|
+    @strings << val
+  end
+
+  finish do
+    ctx[:result] = @strings.join("\n")
+  end
+end
+
+val = strings_dsl.build do
+  add "hello"
+  add "world"
+end
+
+puts val
+
+# output:
+# hello
+# world
+```
+
+== Installation
+
+Add this line to your application's Gemfile:
+
+```ruby
+gem 'alki-dsl'
+```
+
+And then execute:
+
+    $ bundle
+
+Or install it yourself as:
+
+    $ gem install alki-dsl
+
+== Usage
+
+Using a DSL requires calling their `build` method,
+which takes an optional hash of parameters and a ruby block.
+DSLs created with Alki::Dsl cannot directly evaluate strings,
+just ruby blocks.
+
+== Contributing
+
+Bug reports and pull requests are welcome on GitHub at https://github.com/alki-project/alki-dsl. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the http://contributor-covenant.org[Contributor Covenant] code of conduct.
+
+
+== License
+
+The gem is available as open source under the terms of the http://opensource.org/licenses/MIT[MIT License].
+

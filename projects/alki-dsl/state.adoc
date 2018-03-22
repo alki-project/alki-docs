@@ -1,0 +1,47 @@
+=== DSL State
+
+DSLs are always evaluated within a new instance,
+so instance variables can be used to store state,
+however, state can also be stored in the `ctx` hash,
+which provides some advantages.
+
+Data is passed into and out of a DSL via the `ctx` hash.
+It is initially set using the hash provided to the
+DSLs build method, but can be updated by code in the DSL.
+
+Additionally, DSLs can be combined and when run together,
+share a single ctx hash,
+so it can be used to pass data between them.
+
+The result of the build method will either be the full ctx hash, or just the value of `ctx[:result]` if it
+exists (including if it's set to false or nil).
+
+```ruby
+require 'alki/dsl'
+
+strings_dsl = Alki::Dsl.build 'alki/dsls/dsl' do
+  init do
+    ctx[:strings] = []
+  end
+
+  dsl_method :add do |val|
+    ctx[:strings] << val
+  end
+
+  finish do
+    sep = ctx[:separator] || "\n"
+    ctx[:result] = ctx[:strings].join(sep)
+  end
+end
+strings_dsl.build do
+  add 'Hello'
+  add 'World'
+end
+# result => "Hello\nWorld"
+
+strings_dsl.build separator: ', ' do
+  add 'Hello'
+  add 'World'
+end
+# result => "Hello, World"
+```

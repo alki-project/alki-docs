@@ -1,0 +1,30 @@
+Factories (factory)
+-------------------
+
+Factories are a mix between services and funcs. Like services, they take a block which is evaluated
+once. Unlike services though, that block must return a callable "builder" (like a Proc).
+
+If a factory is referenced as a service (i.e. no arguments) it returns a factory object
+that responds to either `#call` or `#new` and will call the builder in turn.
+
+If a factory is instead referenced like a method (i.e. with arguments) it will
+call the builder directly.
+
+```ruby
+require 'alki'
+assembly = Alki.create_assembly do
+  factory :logger do
+    require 'logger'
+    -> (io) { Logger.new io }
+  end
+
+  service :main_logger do
+    logger STDOUT
+    # -or-
+    logger.call STDOUT
+  end
+end
+assembly.new.main_logger << "hello\n"
+
+#output: hello
+```

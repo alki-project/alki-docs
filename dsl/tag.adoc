@@ -1,0 +1,40 @@
+Tags (tag)
+----------
+
+Tags are way of adding metadata to your elements. They can either be just a name, or
+optionally carry a value
+
+```ruby
+require 'alki'
+
+assembly = Alki.create_assembly do
+  tag :tag1, with_value: 123
+  service :tagged do
+    meta[:tags]
+  end
+end
+
+puts assembly.new.tagged
+
+#output: {:with_value=>123, :tag1=>true}
+```
+
+Tags can be applied to groups to tag everything within that group
+
+```ruby
+require 'alki'
+
+assembly = Alki.create_assembly do
+  tag :tag1
+  group :grp do
+    tag :tag2
+    service :tagged do
+      meta[:tags]
+    end
+  end
+end
+
+puts assembly.new.grp.tagged
+
+#output: {:tag1=>true, :tag2=>true}
+```

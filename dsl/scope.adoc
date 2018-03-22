@@ -1,0 +1,49 @@
+Scope
+-----
+
+The most important methods available in a value context
+are other elements that are "in scope".
+For example,
+a value can reference a sibling element in the same group,
+or any value in any ancestor group.
+The order that elements are defined does not effect what is in scope.
+All other elements are out of scope,
+but can usually still be referenced
+by finding an ancestor group that 'is' in scope,
+and then drilling down
+from there.
+
+```ruby
+require 'alki'
+assembly = Alki.create_assembly config_dir: 'config' do
+  set :val1, "1"
+
+  group :main do
+
+    group :sub_group do
+      set :val2, "2"
+    end
+
+    set :values do
+      [
+        val1, # OK
+      # val2, # ERROR
+        sub_group.val2, # OK
+        val3, # OK
+      # val4, # ERROR
+        other_group.val4, #OK
+      ].join('')
+    end
+
+    set :val3, "3"
+  end
+
+  group :other_group do
+    set :val4, "4"
+  end
+
+end
+puts assembly.new.main.values
+
+#output: 1234
+```

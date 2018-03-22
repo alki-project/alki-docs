@@ -1,0 +1,29 @@
+Using Assemblies
+----------------
+
+Assemblies have a `new` method used to create new assembly instances (like a normal class). Once an
+instance is created, anything in the assembly is accessible by drilling down into groups.
+
+Given an assembly like this:
+
+```ruby
+require 'alki'
+assembly = Alki.create_assembly do
+  set :log_io, STDERR
+  group :util do
+    service :logger do
+      require 'logger'
+      Logger.new log_io
+    end
+  end
+end
+```
+
+One can use the logger service like so:
+
+```ruby
+instance = assembly.new
+instance.util.logger.info "test"
+
+# output: I, [<timestamp>] INFO -- : test
+```

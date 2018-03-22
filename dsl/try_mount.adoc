@@ -1,0 +1,7 @@
+Optional mounts (try_mount)
+---------------------------
+
+Sometimes a library might not always be present. For example, using Bundler
+for development only gems. In that case `try_mount` can be used instead of
+`mount`. If the assembly library can't be found, the mount will simply be
+ignore.

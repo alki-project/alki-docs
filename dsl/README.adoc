@@ -1,0 +1,68 @@
+Assembly Definitions
+====================
+
+Assemblies are composed of various element types
+which are defined using the Assembly Definition Domain Specific Language (DSL).
+
+Elements can be groups, values, or meta-elements.
+
+=== Execution Context
+
+When providing a block for a value,
+the block will be executed in a special context with some
+additional methods.
+
+link:scope.adoc[Scope]::
+Other elements can be referenced directly according to particular
+scoping rules.
+
+link:helpers.adoc[Helpers]::
+Additional helper methods for common needs.
+
+Groups
+------
+
+link:group.adoc[group]::
+Defines a group inline, with it's sub-elements defined in a block.
+
+link:load.adoc[load]::
+Load a group from a separate file.
+
+link:mount.adoc[mount]::
+Load an entirely separate Assembly as a group.
+Allows Assemblies to be packaged as gems and reused in other projects.
+
+link:try_mount.adoc[try_mount]::
+An version of mount that is ignored if the other Assembly doesn't exist.
+
+Values
+------
+
+There are four types of elements loosely categorized as "values".
+
+link:set.adoc[set]::
+Basic values set via literal argument or lazy block.
+Good for configuration settings.
+
+link:func.adoc[func]::
+Defines a callable method that can reference other elements.
+
+link:service.adoc[service]::
+Primary element in Assemblies. Defines main application objects.
+
+link:factory.adoc[factory]::
+A mix between services and funcs.
+Good place for common object construction patterns.
+
+Meta Elements
+-------------
+
+link:overlay.adoc[overlay]::
+Alter existing services by processing them when they are constructed.
+
+link:tag.adoc[tag]::
+Tag Groups and Values with arbitrary metadata.
+
+link:overlay_tag.adoc[overlay_tag]::
+Apply overlay to all services with a given tag.
+

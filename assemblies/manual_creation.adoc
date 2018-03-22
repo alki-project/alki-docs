@@ -1,0 +1,20 @@
+Manually Creating Assemblies
+----------------------------
+
+In addition to Project Assemblies, you can also create assemblies directly using `Alki.create_assembly`.
+It should be called with a block that contains the assembly DSL. It will return a Module object that can
+be used directly or assigned to a constant.
+
+```ruby
+require 'alki'
+assembly = Alki.create_assembly do
+  set :msg, "hello world"
+  func :run do
+    puts msg
+  end
+end
+
+assembly.new.run
+
+# output: hello world
+```
