@@ -1,6 +1,12 @@
 language: node_js
 node_js: node
-script: yarn build
+cache:
+  directories:
+    - node_modules
+    - $HOME/.gitbook
+script: 
+  - sed -i s/GA_TOKEN/$GA_TOKEN/ book.json
+  - bash ./build.sh
 deploy:
   local_dir: _book
   provider: pages
