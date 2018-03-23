@@ -1,0 +1,10 @@
+language: node_js
+node_js: node
+script: yarn build
+deploy:
+  local_dir: _book
+  provider: pages
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN
+  on:
+    branch: master

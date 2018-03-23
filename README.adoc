@@ -1,0 +1,196 @@
+# What is Alki?
+
+Alki (AL-kai) is a Dependency Injection framework for Ruby. Alki is designed to help organize and scale your project,
+so you can focus on the important stuff.
+It can be used alongside frameworks such as Ruby on Rails.
+
+Some high level features:
+
+* Easily manage objects and dependencies
+* Enables writing reusable and testable code
+* Requires no annotations, mixins, or other changes to your code.
+* https://github.com/alki-project/alki-console[Developer console] (built on pry)
+* Automatic https://github.com/alki-project/alki-reload[code reloading]
+* Powerful https://github.com/alki-project/alki-dsl[DSL toolkit]
+* Extensible
+
+[[installation]]
+## Installation
+
+Add this line to your application's Gemfile:
+
+```ruby
+gem 'alki'
+```
+
+And then execute:
+
+    $ bundle
+
+Or install it yourself as:
+
+    $ gem install alki
+
+[[example]]
+## Example
+
+[NOTE]
+Full "todo" example can be found https://github.com/alki-project/alki-examples/tree/master/todo[here]
+
+Alki simplifies project organization by pulling out all of the "connective tissue"
+that connects our classes and modules together, and puts them into a special object
+called an Assembly.
+
+There are many ways to use Assemblies, but the most common is to have a single
+Assembly for a project. For example, if you hade a "todo" command line utility
+project that you wanted to use Alki with, all you would need to do to create
+an Assembly is add this file.
+
+.lib/todo.rb
+```ruby
+require 'alki'
+Alki.project_assembly!
+```
+
+This will create a module called `Todo` that is an empty assembly:
+
+```
+$ bundle exec irb -Ilib
+2.4.0 :001 > require 'todo'
+ => true
+2.4.0 :002 > todo = Todo.new
+ => #<Todo:21964520>
+```
+
+[[defining-elements]]
+### Defining Elements
+
+Adding things to the assembly requires an assembly definition file. By convention this is
+named `config/assembly.rb` and is built using a simple DSL. There are
+a handful of different element types in Assemblies. Below are a few of the
+most common. Full documentation of the DSL can be found
+link:assembly_dsl.adoc[here]
+
+Elements can refer to other elements, and can be defined in any order.
+
+.config/assembly.rb
+```ruby
+Alki do
+  group :settings do <1>
+    set(:home) { ENV['HOME'] } <2>
+    set(:db_path) { ENV['TODO_DB_PATH'] || File.join(home,'.todo_db') }
+    set :prompt, 'todo> '
+  end
+
+  service :interface do <3>
+    require 'todo/readline_interface'
+    Todo::ReadlineInterface.new settings.prompt, handler
+  end
+
+  service :handler do
+    require 'todo/command_handler'
+    Todo::CommandHandler.new db
+  end
+
+  service :db do
+    require 'todo/store_db'
+    Todo::StoreDb.new file_store
+  end
+
+  service :file_store do
+    require 'todo/json_file_store'
+    Todo::JsonFileStore.new settings.db_path
+  end
+end
+```
+<1> `group` allows bundling together subelements (and which can be moved to their own files)
+<2> `set` defines simple values
+<3> `service` defines our main application objects
+
+Any element can be accessed directly from the assembly object.
+
+```
+$ bundle exec irb -Ilib
+2.4.0 :001 > require 'todo'
+ => true
+2.4.0 :002 > todo = Todo.new
+ => #<Todo:21964520>
+2.4.0 :003 > todo.interface.run
+> ?
+All commands can be shortened to their first letters
+print
+add <description>
+edit <id> <description>
+complete <id>
+uncomplete <id>
+remove <id>
+move <from> <to>
+quit
+
+```
+
+The 'alki-console' tool can also be used to quickly work with assemblies.
+Add `gem 'alki-console'` to your Gemfile and run `bundle --binstubs`.
+
+```
+$ bin/alki-console
+todo> settings.prompt
+=> 'todo> '
+```
+
+[[executable]]
+### Creating an executable
+
+Read more about creating executables with Alki
+link:executables.adoc[here]
+
+In the todo example, it's a CLI utility so it requires an executable.
+The executable just needs to require the main project file,
+create a new instance of the assembly,
+and call a method on a service.
+
+.exe/todo
+```ruby
+require 'todo'
+Todo.new.interface.run
+```
+
+[[splitting]]
+### Splitting up the Assembly
+
+As a project grows, it's helpful to be able to split out
+parts of the Assembly configuration into multiple files.
+
+This can be accomplished with the `load` method in the DSL,
+which will load the named file and add it the elements
+defined in it as a group in the assembly.
+
+For example, it's common to split out application settings into
+a separate config file.
+
+.config/settings.rb
+```ruby
+Alki do
+ set(:home) { ENV['HOME'] }
+ set(:db_path) { ENV['TODO_DB_PATH'] || File.join(home,'.todo_db') }
+ set :prompt, 'todo> '
+end
+```
+
+.config/assembly.rb
+```ruby
+Alki do
+  load :settings
+
+  service :interface do
+    require 'todo/readline_interface'
+    Todo::ReadlineInterface.new settings.prompt, handler
+  end
+
+  ...
+end
+```
+
+## Authors
+
+Written by Matt Edlefsen
