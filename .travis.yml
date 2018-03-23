@@ -4,6 +4,7 @@ script: yarn build
 deploy:
   local_dir: _book
   provider: pages
+  fqdn: alki.io
   skip_cleanup: true
   github_token: $GITHUB_TOKEN
   on:
