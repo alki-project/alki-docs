@@ -7,16 +7,35 @@ ready to be used.
 
 To get there,
 you provide Alki with your assembly definition,
-which acts as the instructions for how to piece together your
+which acts as the instructions for how to buld and piece together your
 classes and objects.
 Assemblies are made up of elements,
-which are groups of other elements, or various value types like services and factories.
+which can be groups of other elements, or various value types like services, configuration settings, and factories.
 
-=== On-Demand
+Some key features of Alki Assemblies are:
 
+On-Demand::
 Assembly values are only built when referenced, on demand.
 This means even if you have a very large assembly
 only the things you actually use in a given run will be created,
 or often even `require`-d.
 It also means that all values will automatically be built
 in the correct order to satisfy dependencies.
+
+Thread Safe::
+Assemblies can be accessed safely by multiple threads.
+As long as objects within the Assembly are also thread safe,
+an Alki Assembly can be used in a concurrent environment without
+special consideration.
+
+Self Contained::
+All objects created by an Assembly instance are contained within it.
+Different instances of the same Assembly can be used simultaneously
+without data leaking between them.
+
+Distributable in Gems::
+Assemblies can be distributed in gems.
+Users of your library can just require and use the Assembly directly,
+or a simple wrapper could be used around it.
+It can also be link:dsl/mount.adoc[mounted] into users Assemblies if they
+are also using Alki.
