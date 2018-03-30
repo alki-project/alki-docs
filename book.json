@@ -1,11 +1,21 @@
 {
-  "plugins": [ "forkmegithub", "ga" ],
+  "plugins": [ "forkmegithub", "ga", "github-buttons" ],
   "pluginsConfig": {
     "forkmegithub": {
       "url": "https://github.com/alki-project/alki"
     },
     "ga": {
       "token": "GA_TOKEN"
+    },
+    "github-buttons": {
+      "buttons": [
+        {
+          "user": "alki-project",
+          "repo": "alki",
+          "type": "star",
+          "size": "large"
+        }
+      ]
     }
   }
 }
