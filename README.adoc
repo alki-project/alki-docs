@@ -14,6 +14,8 @@ Some high level features:
 * Powerful link:projects/alki-dsl/README.adoc[DSL toolkit]
 * Extensible
 
+For questions or discussion about Alki, head over to the https://groups.google.com/forum/#!forum/alki-project[Google Group].
+
 [[installation]]
 == Installation
 
