@@ -1,0 +1,17 @@
+language: node_js
+node_js: node
+cache:
+  directories:
+    - node_modules
+    - $HOME/.gitbook
+script: 
+  - sed -i s/GA_TOKEN/$GA_TOKEN/ book.json
+  - bash ./build.sh
+deploy:
+  local_dir: _book
+  provider: pages
+  fqdn: alki.io
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN
+  on:
+    branch: master

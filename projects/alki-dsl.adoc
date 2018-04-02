@@ -1,0 +1,401 @@
+= Alki::Dsl
+
+Alki::Dsl is a library for building DSLs. The resulting DSL buliders can be used standalone or as builders for
+link:alki-loader.adoc[Alki::Loader].
+
+Alki::Dsl also allows composing and extending DSLs and comes with built in DSLs for building classes and
+new DSLs.
+
+https://github.com/alki-projects/alki-dsl[Project on Github]
+
+== Synopsis
+
+```ruby
+require 'alki/dsl'
+
+strings_dsl = Alki::Dsl.build 'alki/dsls/dsl' do
+  init do
+    @strings = []
+  end
+
+  dsl_method :add do |val|
+    @strings << val
+  end
+
+  finish do
+    ctx[:result] = @strings.join("\n")
+  end
+end
+
+val = strings_dsl.build do
+  add "hello"
+  add "world"
+end
+
+puts val
+
+# output:
+# hello
+# world
+```
+
+== Installation
+
+Add this line to your application's Gemfile:
+
+```ruby
+gem 'alki-dsl'
+```
+
+And then execute:
+
+    $ bundle
+
+Or install it yourself as:
+
+    $ gem install alki-dsl
+
+== Usage
+
+Using a DSL requires calling their `build` method,
+which takes an optional hash of parameters and a ruby block.
+DSLs created with Alki::Dsl cannot directly evaluate strings,
+just ruby blocks.
+
+[[dsl-methods]]
+=== DSL Methods
+
+Each DSL defines any number of "dsl methods", which are methods that will be exposed to the user of the DSL.
+
+```ruby
+require 'alki/dsl'
+dsl = Alki::Dsl.build 'alki/dsls/dsl' do
+  dsl_method :hello do |name|
+    puts "Hello #{name}"
+  end
+end
+dsl.build do
+  hello 'World'
+end
+
+# output: Hello World
+```
+
+[[init-finish]]
+=== Init and Finish
+
+The DSL can also define "init" and "finish" blocks which will be run before and after the DSL is evaluated.
+
+```ruby
+require 'alki/dsl'
+dsl = Alki::Dsl.build 'alki/dsls/dsl' do
+ init do
+   print "Hello "
+ end
+ dsl_method :name do |name|
+   print name
+ end
+ finish do
+   puts ", and welcome"
+ end
+end
+
+dsl.build do
+  name "Matt"
+end
+
+# output: Hello Matt, and welcome
+```
+
+[[state]]
+=== DSL State
+
+DSLs are always evaluated within a new instance,
+so instance variables can be used to store state,
+however, state can also be stored in the `ctx` hash,
+which provides some advantages.
+
+Data is passed into and out of a DSL via the `ctx` hash.
+It is initially set using the hash provided to the
+DSLs build method, but can be updated by code in the DSL.
+
+Additionally, DSLs can be combined and when run together,
+share a single ctx hash,
+so it can be used to pass data between them.
+
+The result of the build method will either be the full ctx hash, or just the value of `ctx[:result]` if it
+exists (including if it's set to false or nil).
+
+```ruby
+require 'alki/dsl'
+
+strings_dsl = Alki::Dsl.build 'alki/dsls/dsl' do
+  init do
+    ctx[:strings] = []
+  end
+
+  dsl_method :add do |val|
+    ctx[:strings] << val
+  end
+
+  finish do
+    sep = ctx[:separator] || "\n"
+    ctx[:result] = ctx[:strings].join(sep)
+  end
+end
+strings_dsl.build do
+  add 'Hello'
+  add 'World'
+end
+# result => "Hello\nWorld"
+
+strings_dsl.build separator: ', ' do
+  add 'Hello'
+  add 'World'
+end
+# result => "Hello, World"
+```
+
+[[require]]
+=== Combining DSLs
+
+DSLs can "require" other DSLs, causing both of their methods to be available to the user.
+
+Building off of the strings_dsl above.
+
+```ruby
+my_dsl = Alki::Dsl.build 'alki/dsls/dsl' do
+  # Require other DSL. Value can also be a "load" string (see Alki::Loader section)
+  require_dsl strings_dsl
+
+  # This init block will be run *after* the strings_dsl one
+  init do
+    @transform = nil
+  end
+
+  dsl_method :transform do |&blk|
+    # Don't need to share this, so instance variable works
+    @transform = blk
+  end
+
+  # This finish block will be run *before* the strings_dsl one.
+  finish do 
+    if @transform
+      ctx[:strings].map! &@transform
+    end
+  end
+end
+
+my_dsl.build(separator: ', ') do
+  transform(&:capitalize)
+
+  add "hello"
+  add "world"
+end
+
+# result => Hello, World
+
+```
+
+[[helpers]]
+==== DSL Helpers
+
+DSLs can also define helper methods
+which can be called within other dsls that require it.
+
+```ruby
+require 'alki/dsl'
+
+strings_dsl = Alki::Dsl.build 'alki/dsls/dsl' do
+  init do
+    ctx[:strings] = []
+  end
+
+  helper :set_separator do |sep|
+    ctx[:separator] = sep
+  end
+
+  dsl_method :add do |val|
+    ctx[:strings] << val
+  end
+
+  finish do
+    sep = ctx[:separator] || "\n"
+    ctx[:result] = ctx[:strings].join(sep)
+  end
+end
+
+my_dsl = Alki::Dsl.build 'alki/dsls/dsl' do
+  require_dsl strings_dsl
+
+  dsl_method :separator do |sep|
+    set_separator sep # Call helper from strings_dsl
+  end
+end
+
+result = my_dsl.build do
+  separator ' '
+
+  add "hello"
+  add "world"
+end
+
+puts result
+
+# output: hello world
+```
+
+[[alki-loader]]
+### Using with Alki::Loader
+
+Alki::Loader is a library that extends Ruby's `require` method.
+It can be used to associate "builder" objects with files
+or directories so that the code within them is processed by the builder object when they are loaded. More
+documentation can be found link:projects/alki-loader.adoc[here].
+
+The DSLs created by Alki::Dsl can be used as Alki::Loader builder objects,
+allowing DSLs to be used to define classes and modules.
+
+To get started, in your project create a dsls directory at something like `lib/my_project/dsls`. This will
+be where we put our DSL source files.
+
+To register it create a `lib/alki_loader.rb` file:
+
+.lib/alki_loader.rb
+```ruby
+# Treat all ruby source files in lib/my_project/dsls as DSL definition files
+Alki::Loader.register 'my_project/dsls', builder: 'alki/dsls/dsl'
+```
+
+****
+*Note*: This registers the builder using a string. This is a "load" string and is used frequently in Alki
+projects. When used, the string will be `require`-d and then transformed into a constant name
+(so "alki/dsls/dsl" becomes Alki::Dsls::Dsl) and the resulting class will be used. In addition to less
+typing, this also allows lazy loading behavior, where the file and class are only loaded if needed.
+
+The DSL class can be passed directly instead of the load string.
+****
+
+Now a DSL definition file can be created in `lib/my_project/dsls`. Revisiting the previous example, a "strings"
+dsl file can be created. Because the file has been registered with the 'alki/dsls/dsl' builder,
+it will be automatically processed as a DSL definition when loaded.
+
+.lib/my_project/dsls/strings.rb
+```ruby
+Alki do
+  init do
+    ctx[:strings] = []
+  end
+
+  dsl_method :add do |val|
+    ctx[:strings] << val
+  end
+
+  finish do
+    sep = ctx[:separator] || "\n"
+    ctx[:result] = ctx[:strings].join(sep)
+  end
+end
+```
+
+The `Alki do ... end` block is part of Alki::Loader and is required. The rest of the DSL is the same
+as before. When this file is loaded by Ruby, it will create a DSL class called MyProject::Dsls::Strings.
+
+To use we can require the file normally (making sure to add `lib` to the load path and requiring 'alki/dsl'
+first).
+
+```
+$ irb -Ilib
+> require 'alki/dsl'
+> require 'my_project/dsls/strings'
+> MyProject::Dsls::Strings.build do
+>   add "hello"
+>   add "world"
+> end
+ => "hello\nworld"
+>
+```
+
+The second DSL can now be setup the same way. Note that the `require_dsl` value has been replaced with a load
+string.
+
+.lib/my_project/dsls/transformable_strings.rb
+```ruby
+Alki do
+  require_dsl 'my_project/dsls/strings'
+
+  init do
+    @transform = nil
+  end
+
+  dsl_method :transform do |&blk|
+    @transform = blk
+  end
+
+  finish do
+    if @transform
+      ctx[:strings].map! &@transform
+    end
+  end
+end
+```
+
+So what if we want to use our DSL with Alki::Loader as well? First, our DSL right now produces
+a string, but Alki::Loader requires builders to define a constant with the correct name. Alki::Dsl comes with a
+"class" DSL that makes this easy. First lets create a new DSL that adapts our transformable_strings DSL into a one
+that defines a module.
+
+.lib/my_project/dsls/strings_class.rb
+```ruby
+Alki do
+  require_dsl 'alki/dsls/class'
+  require_dsl 'my_project/dsls/transformable_strings', :after # This makes it's finish hook
+                                                              # run before ours
+
+  finish do
+    # Helpers provided by alki/dsls/class
+    create_as_module # Don't need a class, just a module
+    value = ctx[:result]
+    add_class_method(:value) { value }
+  end
+end
+```
+
+Now we can create a new directory, register it with Alki::Loader, and add a file that uses the DSL. Note
+that we can set separator in the Alki::Loader register call. Any data values set here are passed in
+as `ctx` in the DSL.
+
+.lib/alki_loader.rb
+```ruby
+Alki::Loader.register 'my_project/dsls', builder: 'alki/dsls/dsl'
+Alki::Loader.register 'my_project/strings', builder: 'my_project/dsls/strings_class', separator: ', '
+```
+
+.lib/my_project/strings/hello_world.rb
+```ruby
+Alki do
+  transform &:capitalize
+
+  add "hello"
+  add "world"
+end
+```
+
+```
+$ irb -Ilib
+> require 'alki/dsl'
+> require 'my_project/strings/hello_world'
+> MyProject::Strings::HelloWorld.value
+ => "Hello, World"
+>
+```
+
+## Contributing
+
+Bug reports and pull requests are welcome on GitHub at https://github.com/alki-project/alki-dsl. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the http://contributor-covenant.org[Contributor Covenant] code of conduct.
+
+
+## License
+
+The gem is available as open source under the terms of the http://opensource.org/licenses/MIT[MIT License].
+
