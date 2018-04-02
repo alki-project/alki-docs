@@ -4,7 +4,7 @@ Using with Alki::Loader
 Alki::Loader is a library that extends Ruby's `require` method.
 It can be used to associate "builder" objects with files
 or directories so that the code within them is processed by the builder object when they are loaded. More
-documentation can be found link:subprojects/alki-loader.adoc[here].
+documentation can be found link:projects/alki-loader.adoc[here].
 
 The DSLs created by Alki::Dsl can be used as Alki::Loader builder objects,
 allowing DSLs to be used to define classes and modules.

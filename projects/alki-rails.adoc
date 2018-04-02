@@ -131,7 +131,7 @@ end
 
 === Code Reloading
 
-Alki::Rails automatically will set up link:subprojects/alki-reload.adoc[Alki::Reload] and enable it whenever
+Alki::Rails automatically will set up link:projects/alki-reload.adoc[Alki::Reload] and enable it whenever
 Rails itself has code reloading enabled. It will handle reloading all Alki configuration files and files in `lib/`.
 
 Generally the Rails and Alki code reloading systems should work together without any issues.
